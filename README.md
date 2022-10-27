@@ -2,7 +2,7 @@
 
 TicTacToe on an Opentrons Liquid Handling Robot, using a video game controller.
 
-See the [video]().
+See the [video](https://www.youtube.com/watch?v=15EhR7SmiHc).
 
 ![poster](./.github/poster.JPG)
 ![instructions](./.github/ttthelp.jpg)
