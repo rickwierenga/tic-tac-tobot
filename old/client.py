@@ -21,8 +21,8 @@ dy = 0
 import time
 
 MIN_X = 10
-MAX_X = 380
-MAX_Y = 320
+MAX_X = 400
+MAX_Y = 380
 MIN_Y = 10
 
 doing = True
@@ -33,7 +33,7 @@ def worker():
   print("worker started")
 
   while True:
-    time.sleep(0.05)
+    time.sleep(0.005) # 0.05
     print("locs", locx, locy)
 
     if not doing:

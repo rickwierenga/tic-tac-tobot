@@ -6,14 +6,15 @@ TRAVERSE_HEIGHT = 150
 
 from opentrons.execute import get_protocol_api
 px = get_protocol_api("2.0")
-tiprack = px.load_labware("opentrons_96_tiprack_300ul", 10)
-instr = px.load_instrument('p300_single_gen2', 'right', tip_racks=[tiprack])
+tiprack = px.load_labware("opentrons_96_tiprack_20ul", 10) # 300
+instr = px.load_instrument('p20_single_gen2', 'right', tip_racks=[tiprack]) # 20
 px.home()
 
 hardware = instr._implementation._protocol_interface.get_hardware()
 
 from opentrons import types
 from opentrons.protocols.api_support.labware_like import LabwareLike
+from opentrons.protocol_api import labware
 
 from opentrons.protocols.api_support.util import AxisMaxSpeeds
 def move2(x, y, z):
@@ -21,7 +22,7 @@ def move2(x, y, z):
     types.Mount.RIGHT,
     types.Point(x, y, z),
     critical_point=None,
-    speed=40,
+    speed=80,
     max_speeds=AxisMaxSpeeds()
   )
 
@@ -66,15 +67,28 @@ while True:
             print("waiting")
             time.sleep(1)
             print("pickup")
-            instr.pick_up_tip()
-            resp = f"P:{100},{300},{TRAVERSE_HEIGHT}"
+            try:
+              # translate in place
+              tiprack, target_well = labware.next_available_tip(instr.starting_tip, instr.tip_racks, instr.channels)
+              move_to_location = target_well.top()
+              # move_to_location._point = types.Point(move_to_location._point.x+1, move_to_location._point.y, move_to_location._point.z)
+              move_to_location._point = types.Point(move_to_location._point.x+0, move_to_location._point.y, move_to_location._point.z)
+              instr.pick_up_tip(move_to_location)
+            except Exception as e:
+              print("error", e)
+            px, py = 50, 320
+            resp = f"P:{px:03},{py},{TRAVERSE_HEIGHT}"
             hardware._backend._smoothie_driver.set_use_wait(False)
+            move2(px, py, TRAVERSE_HEIGHT)
           elif command == "E":
             hardware._backend._smoothie_driver.set_use_wait(True)
             print("waiting")
             time.sleep(1)
             print("eject")
-            instr.drop_tip()
+            try:
+              instr.drop_tip()
+            except Exception as e:
+              print("error", e)
             resp = f"E:{390},{330},{TRAVERSE_HEIGHT}"
             hardware._backend._smoothie_driver.set_use_wait(False)
           elif command == "A":
@@ -84,7 +98,10 @@ while True:
             x, y, z = data.split(":")[1].split(",")
             x, y, z = float(x), float(y), float(z)
             print("aspirate", x, y, z)
-            instr.aspirate(100, types.Location(types.Point(x, y, 50), LabwareLike(None)))
+            try:
+              instr.aspirate(100, types.Location(types.Point(x, y, 30), LabwareLike(None)))
+            except Exception as e:
+              print("error", e)
             resp = "A" * CMD_LENGTH
             hardware._backend._smoothie_driver.set_use_wait(False)
             move2(x, y, z=TRAVERSE_HEIGHT)
@@ -95,10 +112,13 @@ while True:
             x, y, z = data.split(":")[1].split(",")
             x, y, z = float(x), float(y), float(z)
             print("dispense", x, y, z)
-            instr.dispense(100, types.Location(types.Point(x, y, TRAVERSE_HEIGHT), LabwareLike(None)))
+            try:
+              instr.dispense(100, types.Location(types.Point(x, y, TRAVERSE_HEIGHT), LabwareLike(None)))
+            except Exception as e:
+              print("error", e)
             resp = "D" * CMD_LENGTH
             hardware._backend._smoothie_driver.set_use_wait(False)
           resp = resp.encode("utf-8")
           conn.sendall(resp)
-  except ConnectionResetError:
-    print("ConnectionResetError")
+  except (ConnectionResetError, BrokenPipeError):
+    print("ConnectionResetError or BrokenPipeError")

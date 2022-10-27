@@ -2,26 +2,21 @@
 
 TicTacToe on an Opentrons Liquid Handling Robot, using a video game controller.
 
-## Protocol
+See the [video]().
 
-TCP/IP sockets. Server uses port 65432. All commands are 13 bytes.
+![poster](./.github/poster.JPG)
+![instructions](./.github/ttthelp.jpg)
+
+## Developers
+
+- Install from a custom branch of the Opentrons API, to make everything run smoothly. Available [here](https://github.com/rickwierenga/opentrons/tree/tictactobot).
+- Install [python-gamepad](https://github.com/rickwierenga/python-gamepad)
 
 ```
-M:xxx,yyy,zzz     move to location
-
-# below only the first character matters.
-PPPPPPPPPPPPP     pick up next tip
-EEEEEEEEEEEEE     eject tip to next free location
-
-A:xxx,yyy,zzz     aspirate at location, 100ul
-D:xxx,yyy,zzz     dispense at location, 100ul
+python ttt.py # run on the Opentrons
 ```
 
-## Notes
-
-- This code is written in "Hackathon style".
-
-- Uses custom a branch of the Opentrons API, to make everything run smoothly. Available [here](https://github.com/rickwierenga/opentrons/tree/tictactobot).
+- Note: this code is written in "Hackathon style", it's not pretty (at all), but it works.
 
 ---
 
